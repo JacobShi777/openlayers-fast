@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OlFast</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    
+    <!-- <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> -->
+
+    <script type="text/javascript"  src="./dist/dev/OlFast.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ol@v9.2.4/dist/ol.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v9.2.4/ol.css">
+    <!-- <script src="ol.js"></script> -->
+    <!-- <link rel="stylesheet" href="ol.css" type="text/css" /> -->
+  </head>
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+    }
+
+    #app {
+      height: 100%;
+      /* display: flex; */
+    }
+
+    #map {
+      height: 60%;
+      width: 100%;
+    }
+
+    .examples {
+      padding: 5px;
+    }
+
+    .form-label {
+      font-size: 14px;
+      color: #606266;
+    }
+
+    .el-button, .el-input__inner, .el-select {
+      padding: 5px 7px;
+    }
+    .el-button {
+      margin-left: 3px !important;
+    }
+  </style>
+
+  <body>
+    <div id="app">
+      <div id="map"></div>
+      <div class="examples">
+        <el-button @click="drawPoint" size="mini">绘制点</el-button>
+        <el-button @click="drawPolygon" size="mini">绘制矩形</el-button>
+        <span class="form-label">类型: </span>
+        <el-select v-model="drawType" size="mini" style="width: 100px;">
+          <el-option label="点" value="Point"></el-option>
+          <el-option label="线" value="LineString"></el-option>
+          <el-option label="矩形" value="Rectangle"></el-option>
+          <el-option label="多边形" value="Polygon"></el-option>
+        </el-select>
+        <span class="form-label">名称: </span>  
+        <el-input v-model="textContent" size="mini" style="width: 100px;"></el-input>
+        <el-button @click="drawFeature" size="mini">开始绘制</el-button>
+        <el-button @click="stopDrawing" size="mini">结束绘制</el-button>
+        <el-button @click="getFeatures" size="mini">获取所有绘制结果</el-button>
+        <el-button @click="getFeatureCoordinates" size="mini">获取坐标</el-button>
+        <el-button @click="getFeaturesCoordinates" size="mini">获取全部坐标</el-button>
+        <el-button @click="removeFeatureOne" size="mini">依次删除</el-button>
+        <el-button @click="removeAllFeatures" size="mini">删除全部</el-button>
+        <el-button @click="changeSource" size="mini">切换source</el-button>
+  
+        <div style="height: 5px;"></div>
+        <span class="form-label">图层名: </span>
+        <el-input v-model="layerName" size="mini" style="width: 100px;"></el-input>
+        <el-button @click="addLayer" size="mini">添加图层</el-button>
+        <el-button @click="setCurrentLayer" size="mini">设置当前图层</el-button>
+        <el-button @click="removeLayer" size="mini">删除图层</el-button>
+        <el-button @click="setLayerStyle" size="mini">设置图层样式</el-button>
+        <el-checkbox v-model="layerVisible" :true-label="1" :false-label="0"></el-checkbox>
+        <el-button @click="setLayerVisible" size="mini">图层可见</el-button>
+
+        <div style="height: 5px;"></div>
+        <el-button @click="heatmapAddPoints" size="mini">热点图</el-button>
+
+        <div style="height: 5px;"></div>
+        <el-button @click="test" size="mini">测试</el-button>
+        <el-button @click="originApi" size="mini">原生api</el-button>
+
+
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      const app = new Vue({
+        el: '#app',
+        data: {
+          webGis: undefined,
+          data: [],
+          layerName: '',
+          drawType: 'Point',
+          textContent: '',
+          layerVisible: 1,
+        },
+        methods: {
+          drawPoint() {
+            const options = {
+              // 允许连续绘制
+              textContent: '点1',
+              continuousDrawing: true,
+              properties: {
+                name: 'point1',
+                type: 'point'
+              }
+            }
+            this.webGis.draw.drawPoint(options, (params) => {
+              this.data.push(params)
+            })
+          },
+          drawPolygon() {
+            this.webGis.draw.drawPolygon(undefined, (params) => {
+              this.data.push(params)
+            })
+          },
+          drawFeature() {
+            const options = {
+              textContent: this.textContent,
+              properties: {
+                name: this.textContent,
+                type: this.drawType
+              }
+            }
+            this.webGis.draw.drawFeature(this.drawType, options, (params) => {
+              console.log(params)
+              this.data.push(params)
+            })
+          },
+          stopDrawing() {
+            this.webGis.draw.stopDrawing()
+          },
+          getFeatures() {
+            this.webGis.draw.getFeatures().forEach((feature) => {
+              console.log('-----')
+              console.log(feature)
+              // console.log(feature.getProperties())
+              // console.log(feature.getGeometry().getCoordinates())
+              // console.log(feature.getKeys())
+            })
+          },
+          getFeatureCoordinates() {
+            const param = this.data[0]
+            console.log(param)
+            console.log(this.webGis.draw.getFeatureCoordinates(param.id))
+          },
+          getFeaturesCoordinates() {
+            console.log(this.webGis.draw.getFeaturesCoordinates())
+          },
+          removeFeatureOne() {
+            const one = this.data.shift()
+            one && this.webGis.draw.removeFeatureById(one.id)
+          },
+          removeAllFeatures() {
+            this.webGis.draw.removeFeatures()
+            this.data = []
+          },
+          changeSource() {
+            this.webGis.draw.changeSource()
+          },
+
+          addLayer() {
+            this.webGis.draw.addLayer(this.layerName)
+            console.log('addLayer', this.layerName)
+          },
+          setCurrentLayer() {
+            this.webGis.draw.setCurrentLayer(this.layerName)
+            console.log('setCurrentLayer', this.layerName)
+          },
+          removeLayer() {
+            this.webGis.draw.removeLayer(this.layerName)
+            console.log('removeLayer', this.layerName)
+          },
+          setLayerStyle() {
+            this.webGis.draw.setLayerStyle({
+              fillColor: 'brown',
+              strokeColor: 'green',
+              strokeWidth: 2
+            })
+          },
+          setLayerVisible() {
+            this.webGis.draw.setLayerVisible(this.layerVisible === 1, this.layerName)
+          },
+
+          heatmapAddPoints() {
+            const points = [
+              { longitude: 121.0000, latitude: 34.0000 },
+              { longitude: 121.0000, latitude: 34.0000 },
+              { longitude: 121.0100, latitude: 34.0100 },
+              { longitude: 122.0100, latitude: 35.0100 },
+            ]
+            this.webGis.heatmap.addPoints(points)
+          },
+
+          test() {
+            this.webGis.draw.test()
+            // console.log(this.webGis)
+            // console.log(this.webGis.draw)
+            // console.log(this.webGis.draw.layer)
+          },
+          originApi() {
+            const source = new ol.source.Vector({wrapX: false});
+            const vector = new ol.layer.Vector({
+              source: source,
+            });
+            this.webGis.map.addLayer(vector)
+            draw = new ol.interaction.Draw({
+              source: source,
+              type: 'Point',
+            });
+            this.webGis.map.addInteraction(draw);
+            // TODO 需要对draw进行处理，否则会报错 click应该只针对自定义的开发内容
+          },
+        },
+        mounted() {
+          this.webGis = new OlFast({
+            target: "map",
+          })
+          this.webGis.draw.setClickCallback((params) => {
+            console.log(params)
+          })
+        }
+      })
+    </script>
+  </body>
+</html>
