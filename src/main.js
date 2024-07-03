@@ -7,16 +7,19 @@ import { defaults } from "ol/interaction";
 
 import FastDraw from './fast/draw.js';
 import FastHeatmap from './fast/heatmap.js';
+import FastTool from './fast/tool.js';
 
 class OlFast {
   map;
   draw;
   heatmap;
+  tool;
 
   constructor(options) {
     this._init(options)
     this.draw = new FastDraw(this)
     this.heatmap = new FastHeatmap(this)
+    this.tool = new FastTool(this)
   }
 
   _init(options) {

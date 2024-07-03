@@ -3,7 +3,7 @@ import {OSM, Vector as VectorSource} from 'ol/source.js';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
 import { createBox } from 'ol/interaction/Draw'
 
-import styleBuilder from '..tools/style-builder';
+import styleBuilder from '../utils/style-builder';
 
 class FastDraw {
   #draw

@@ -87,6 +87,7 @@
 
         <div style="height: 5px;"></div>
         <el-button @click="heatmapAddPoints" size="mini">热点图</el-button>
+        <el-button @click="exportMap" size="mini">导出地图</el-button>
 
         <div style="height: 5px;"></div>
         <el-button @click="test" size="mini">测试</el-button>
@@ -203,6 +204,10 @@
               { longitude: 122.0100, latitude: 35.0100 },
             ]
             this.webGis.heatmap.addPoints(points)
+          },
+
+          exportMap() {
+            this.webGis.tool.exportMap()
           },
 
           test() {
